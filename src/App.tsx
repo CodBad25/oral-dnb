@@ -143,8 +143,7 @@ export default function App() {
                 {candidateInfo}
               </span>
             )}
-            {history.length > 0 && (
-              <div className="flex bg-gray-100 dark:bg-gray-700 rounded-lg p-0.5 gap-0.5">
+            <div className="flex bg-gray-100 dark:bg-gray-700 rounded-lg p-0.5 gap-0.5">
                 {([
                   { key: 'evaluation' as const, label: 'Évaluation', icon: ClipboardCheck },
                   { key: 'resultats' as const, label: 'Résultats', icon: Trophy },
@@ -167,8 +166,7 @@ export default function App() {
                     <span className="hidden sm:inline">{label}</span>
                   </button>
                 ))}
-              </div>
-            )}
+            </div>
             {appView === 'evaluation' && isViewingHistory && (
               isEditingHistory ? (
                 <span className="text-xs bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 px-2 py-1 rounded font-medium">

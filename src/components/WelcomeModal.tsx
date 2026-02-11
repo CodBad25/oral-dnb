@@ -49,11 +49,11 @@ export const WelcomeModal = ({ onStartEvaluation, onViewResults, onViewAnalyse }
         <div className="px-6 py-5 space-y-3">
           {!hasHistory && (
             <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">
-              Bienvenue ! Commencez par configurer votre jury puis évaluez vos candidats.
+              Bienvenue ! Commencez par évaluer vos candidats ou consultez les résultats.
             </p>
           )}
 
-          {/* Primary action */}
+          {/* Évaluation */}
           <button
             onClick={onStartEvaluation}
             className="w-full flex items-center gap-4 p-4 rounded-xl bg-indigo-50 dark:bg-indigo-900/30 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 border-2 border-indigo-200 dark:border-indigo-700 transition-colors group"
@@ -74,47 +74,45 @@ export const WelcomeModal = ({ onStartEvaluation, onViewResults, onViewAnalyse }
             <ChevronRight size={18} className="text-indigo-400 group-hover:translate-x-1 transition-transform" />
           </button>
 
-          {hasHistory && (
-            <>
-              {/* Results */}
-              <button
-                onClick={onViewResults}
-                className="w-full flex items-center gap-4 p-4 rounded-xl bg-gray-50 dark:bg-gray-700/50 hover:bg-gray-100 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-600 transition-colors group"
-              >
-                <div className="p-3 bg-emerald-600 rounded-xl text-white shrink-0">
-                  <Trophy size={22} />
-                </div>
-                <div className="text-left flex-1">
-                  <p className="font-semibold text-gray-900 dark:text-white">
-                    Résultats du jury
-                  </p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-                    Bilan, exports PDF/CSV, statistiques
-                  </p>
-                </div>
-                <ChevronRight size={18} className="text-gray-400 group-hover:translate-x-1 transition-transform" />
-              </button>
+          {/* Résultats */}
+          <button
+            onClick={onViewResults}
+            className="w-full flex items-center gap-4 p-4 rounded-xl bg-gray-50 dark:bg-gray-700/50 hover:bg-gray-100 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-600 transition-colors group"
+          >
+            <div className="p-3 bg-emerald-600 rounded-xl text-white shrink-0">
+              <Trophy size={22} />
+            </div>
+            <div className="text-left flex-1">
+              <p className="font-semibold text-gray-900 dark:text-white">
+                Résultats du jury
+              </p>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                {hasHistory
+                  ? `${history.length} candidat${history.length > 1 ? 's' : ''} · Bilan, exports PDF/CSV`
+                  : 'Bilan, exports PDF/CSV, statistiques'}
+              </p>
+            </div>
+            <ChevronRight size={18} className="text-gray-400 group-hover:translate-x-1 transition-transform" />
+          </button>
 
-              {/* Analyse */}
-              <button
-                onClick={onViewAnalyse}
-                className="w-full flex items-center gap-4 p-4 rounded-xl bg-gray-50 dark:bg-gray-700/50 hover:bg-gray-100 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-600 transition-colors group"
-              >
-                <div className="p-3 bg-blue-600 rounded-xl text-white shrink-0">
-                  <BarChart3 size={22} />
-                </div>
-                <div className="text-left flex-1">
-                  <p className="font-semibold text-gray-900 dark:text-white">
-                    Analyse avancée
-                  </p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-                    Comparer les candidats, synthèse multi-jury
-                  </p>
-                </div>
-                <ChevronRight size={18} className="text-gray-400 group-hover:translate-x-1 transition-transform" />
-              </button>
-            </>
-          )}
+          {/* Analyse */}
+          <button
+            onClick={onViewAnalyse}
+            className="w-full flex items-center gap-4 p-4 rounded-xl bg-gray-50 dark:bg-gray-700/50 hover:bg-gray-100 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-600 transition-colors group"
+          >
+            <div className="p-3 bg-blue-600 rounded-xl text-white shrink-0">
+              <BarChart3 size={22} />
+            </div>
+            <div className="text-left flex-1">
+              <p className="font-semibold text-gray-900 dark:text-white">
+                Analyse avancée
+              </p>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                Comparer les candidats, synthèse multi-jury
+              </p>
+            </div>
+            <ChevronRight size={18} className="text-gray-400 group-hover:translate-x-1 transition-transform" />
+          </button>
         </div>
 
         {/* Footer */}
