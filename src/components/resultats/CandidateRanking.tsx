@@ -4,14 +4,15 @@ import type { EvaluationState } from '@/hooks/useEvaluation';
 import { fmtPt, getEvaluationTotal } from '@/lib/analyse-utils';
 import { grille } from '@/data/grille-2026';
 
-type SortKey = 'total' | 'nom' | 'classe';
+type SortKey = 'total' | 'nom' | 'classe' | 'jury';
 type SortDir = 'asc' | 'desc';
 
 interface CandidateRankingProps {
   history: EvaluationState[];
+  showJury?: boolean;
 }
 
-export const CandidateRanking = ({ history }: CandidateRankingProps) => {
+export const CandidateRanking = ({ history, showJury }: CandidateRankingProps) => {
   const [sortKey, setSortKey] = useState<SortKey>('total');
   const [sortDir, setSortDir] = useState<SortDir>('desc');
 
@@ -37,6 +38,9 @@ export const CandidateRanking = ({ history }: CandidateRankingProps) => {
         break;
       case 'classe':
         cmp = a.candidate.classe.localeCompare(b.candidate.classe);
+        break;
+      case 'jury':
+        cmp = (a.jury?.juryNumber || '').localeCompare(b.jury?.juryNumber || '');
         break;
     }
     return sortDir === 'asc' ? cmp : -cmp;
@@ -86,6 +90,16 @@ export const CandidateRanking = ({ history }: CandidateRankingProps) => {
                   Classe <SortIcon col="classe" />
                 </span>
               </th>
+              {showJury && (
+                <th
+                  onClick={() => handleSort('jury')}
+                  className="text-left py-2 px-2 text-xs font-semibold text-gray-500 dark:text-gray-400 cursor-pointer hover:text-gray-700 dark:hover:text-gray-200 select-none"
+                >
+                  <span className="inline-flex items-center gap-1">
+                    Jury <SortIcon col="jury" />
+                  </span>
+                </th>
+              )}
               <th
                 onClick={() => handleSort('total')}
                 className="text-right py-2 px-2 text-xs font-semibold text-gray-500 dark:text-gray-400 cursor-pointer hover:text-gray-700 dark:hover:text-gray-200 select-none"
@@ -113,6 +127,11 @@ export const CandidateRanking = ({ history }: CandidateRankingProps) => {
                   <td className="py-2 px-2 text-gray-600 dark:text-gray-400">
                     {entry.candidate.classe}
                   </td>
+                  {showJury && (
+                    <td className="py-2 px-2 text-gray-600 dark:text-gray-400">
+                      J{entry.jury?.juryNumber || '?'}
+                    </td>
+                  )}
                   <td className={`py-2 px-2 text-right font-bold ${getTotalColor(total)}`}>
                     {fmtPt(total)}/{grille.totalPoints}
                   </td>

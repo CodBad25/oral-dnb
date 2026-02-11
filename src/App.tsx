@@ -1,6 +1,7 @@
 import { Loader2 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { LoginPage } from '@/components/auth/LoginPage';
+import { AdminDashboard } from '@/components/admin/AdminDashboard';
 import { HistoryProvider } from '@/contexts/HistoryContext';
 import JuryApp from '@/JuryApp';
 
@@ -26,21 +27,7 @@ export default function App() {
 
   // Admin
   if (isAdmin) {
-    // TODO: Phase 4 — AdminDashboard
-    return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
-        <div className="text-center">
-          <p className="text-lg font-semibold text-gray-900 dark:text-white">Administration</p>
-          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Dashboard admin en cours de développement</p>
-          <button
-            onClick={() => signOut()}
-            className="mt-4 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-medium transition-colors"
-          >
-            Déconnexion
-          </button>
-        </div>
-      </div>
-    );
+    return <AdminDashboard onSignOut={() => signOut()} />;
   }
 
   // Jury
