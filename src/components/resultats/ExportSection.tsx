@@ -1,10 +1,8 @@
-import { useState } from 'react';
-import { Download, FileText, FileSpreadsheet, FileJson, Share2, Check } from 'lucide-react';
+import { Download, FileText, FileSpreadsheet, FileJson } from 'lucide-react';
 import type { JuryInfo } from '@/types';
 import { exportAllPDF, exportCSV } from '@/lib/export';
 import { exportJuryJSON } from '@/lib/analyse-export';
 import { getHistory } from '@/lib/storage';
-import { encodeShareURL } from '@/lib/share';
 
 interface ExportSectionProps {
   jury: JuryInfo;
@@ -12,14 +10,6 @@ interface ExportSectionProps {
 
 export const ExportSection = ({ jury }: ExportSectionProps) => {
   const history = getHistory();
-  const [copied, setCopied] = useState(false);
-
-  const handleShare = async () => {
-    const url = encodeShareURL(jury, history);
-    await navigator.clipboard.writeText(url);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 3000);
-  };
 
   const buttons = [
     {
@@ -46,7 +36,7 @@ export const ExportSection = ({ jury }: ExportSectionProps) => {
     <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
       <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-200 mb-3 flex items-center gap-2">
         <Download size={16} />
-        Exports & Partage
+        Exports
       </h3>
       <div className="flex flex-wrap gap-3">
         {buttons.map((btn) => (
@@ -59,13 +49,6 @@ export const ExportSection = ({ jury }: ExportSectionProps) => {
             {btn.label}
           </button>
         ))}
-        <button
-          onClick={handleShare}
-          className="flex items-center gap-2 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium text-sm transition-colors"
-        >
-          {copied ? <Check size={16} /> : <Share2 size={16} />}
-          {copied ? 'Lien copié !' : 'Partager les résultats'}
-        </button>
       </div>
     </div>
   );
