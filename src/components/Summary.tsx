@@ -1,5 +1,5 @@
 import type { FC } from 'react';
-import { AlertTriangle, Check, FileDown } from 'lucide-react';
+import { AlertTriangle, Check, FileDown, CheckCircle2 } from 'lucide-react';
 import type { JuryInfo, CandidateInfo } from '@/types';
 import type { EvaluationState, TimerData } from '@/hooks/useEvaluation';
 import { exportPDF } from '@/lib/export';
@@ -17,6 +17,7 @@ interface SummaryProps {
   comments: string;
   onCommentsChange: (comments: string) => void;
   onNextCandidate: () => void;
+  onCloseSession: () => void;
   onPrevStep: () => void;
   timers?: { expose?: TimerData; entretien?: TimerData };
   fullState: EvaluationState;
@@ -62,6 +63,7 @@ export const Summary: FC<SummaryProps> = ({
   comments,
   onCommentsChange,
   onNextCandidate,
+  onCloseSession,
   onPrevStep,
   timers,
   fullState,
@@ -202,12 +204,21 @@ export const Summary: FC<SummaryProps> = ({
           <FileDown size={16} />
           PDF
         </button>
-        <button
-          onClick={onNextCandidate}
-          className="px-5 py-2 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg transition-colors text-sm"
-        >
-          Candidat suivant
-        </button>
+        <div className="flex gap-2">
+          <button
+            onClick={onNextCandidate}
+            className="px-5 py-2 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg transition-colors text-sm"
+          >
+            Candidat suivant
+          </button>
+          <button
+            onClick={onCloseSession}
+            className="flex items-center gap-1.5 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-lg transition-colors text-sm"
+          >
+            <CheckCircle2 size={16} />
+            Clôturer
+          </button>
+        </div>
       </div>
     </div>
   );

@@ -318,6 +318,10 @@ export default function App() {
                 comments={state.comments}
                 onCommentsChange={setComments}
                 onNextCandidate={resetForNextCandidate}
+                onCloseSession={() => {
+                  resetForNextCandidate();
+                  setAppView('resultats');
+                }}
                 onPrevStep={prevStep}
                 timers={state.timers}
                 fullState={state}
