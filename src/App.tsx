@@ -114,8 +114,25 @@ export default function App() {
 
   return (
     <div className={`bg-gray-50 dark:bg-gray-900 transition-colors ${appView !== 'evaluation' || state.currentStep >= 5 ? 'h-screen overflow-hidden' : 'min-h-screen'}`}>
+      {showWelcome && (
+        <WelcomeModal
+          onStartEvaluation={() => {
+            setAppView('evaluation');
+            setShowWelcome(false);
+          }}
+          onViewResults={() => {
+            setAppView('resultats');
+            setShowWelcome(false);
+          }}
+          onViewAnalyse={() => {
+            setAppView('analyse');
+            setShowWelcome(false);
+          }}
+        />
+      )}
+
       {/* Header */}
-      <header className="bg-white dark:bg-gray-800 shadow-sm sticky top-0 z-50">
+      <header className={cn("bg-white dark:bg-gray-800 shadow-sm sticky top-0 z-50", showWelcome && "invisible")}>
         <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
           <h1 className="text-xl md:text-2xl font-bold text-gray-900 dark:text-white">
             Évaluation Orale DNB 2026
@@ -284,7 +301,7 @@ export default function App() {
       </header>
 
       {/* Main content */}
-      {appView === 'analyse' ? (
+      {showWelcome ? null : appView === 'analyse' ? (
         <AnalysePage />
       ) : appView === 'resultats' ? (
         <ResultatsPage jury={state.jury} />
@@ -413,22 +430,6 @@ export default function App() {
         </main>
       )}
 
-      {showWelcome && (
-        <WelcomeModal
-          onStartEvaluation={() => {
-            setAppView('evaluation');
-            setShowWelcome(false);
-          }}
-          onViewResults={() => {
-            setAppView('resultats');
-            setShowWelcome(false);
-          }}
-          onViewAnalyse={() => {
-            setAppView('analyse');
-            setShowWelcome(false);
-          }}
-        />
-      )}
     </div>
   );
 }
