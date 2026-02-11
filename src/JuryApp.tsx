@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Moon, Sun, Users, ArrowLeft, Save, Download, Pencil, Trophy, ClipboardCheck, LogOut, Loader2 } from 'lucide-react';
+import { Moon, Sun, Users, ArrowLeft, Save, Download, Pencil, Trophy, ClipboardCheck, GitCompare, LogOut, Loader2 } from 'lucide-react';
 import { useEvaluation } from '@/hooks/useEvaluation';
 import { useHistory } from '@/contexts/HistoryContext';
 import { grille } from '@/data/grille-2026';
@@ -15,6 +15,7 @@ import { Summary } from '@/components/Summary';
 import { cn } from '@/lib/utils';
 import { exportCSV, exportAllPDF } from '@/lib/export';
 import { ResultatsPage } from '@/components/resultats/ResultatsPage';
+import { CompareTab } from '@/components/analyse/CompareTab';
 import { WelcomeModal } from '@/components/WelcomeModal';
 
 interface JuryAppProps {
@@ -50,7 +51,7 @@ export default function JuryApp({ profile, onSignOut }: JuryAppProps) {
   });
 
   const [showWelcome, setShowWelcome] = useState(true);
-  const [appView, setAppView] = useState<'evaluation' | 'resultats'>('evaluation');
+  const [appView, setAppView] = useState<'evaluation' | 'resultats' | 'analyse'>('evaluation');
   const [evalSection, setEvalSection] = useState(0);
   const [showHistory, setShowHistory] = useState(false);
   const [viewingDbId, setViewingDbId] = useState<string | null>(null);
@@ -125,7 +126,7 @@ export default function JuryApp({ profile, onSignOut }: JuryAppProps) {
   };
 
   return (
-    <div className={`bg-gray-50 dark:bg-gray-900 transition-colors ${appView !== 'evaluation' || state.currentStep >= 5 ? 'h-screen overflow-hidden' : 'min-h-screen'}`}>
+    <div className={`bg-gray-50 dark:bg-gray-900 transition-colors ${appView === 'resultats' || appView === 'analyse' || state.currentStep >= 5 ? 'h-screen overflow-hidden' : 'min-h-screen'}`}>
       {showWelcome && (
         <WelcomeModal
           onStartEvaluation={() => {
@@ -137,7 +138,7 @@ export default function JuryApp({ profile, onSignOut }: JuryAppProps) {
             setShowWelcome(false);
           }}
           onViewAnalyse={() => {
-            setAppView('resultats');
+            setAppView('analyse');
             setShowWelcome(false);
           }}
         />
@@ -159,6 +160,7 @@ export default function JuryApp({ profile, onSignOut }: JuryAppProps) {
               {([
                 { key: 'evaluation' as const, label: 'Évaluation', icon: ClipboardCheck },
                 { key: 'resultats' as const, label: 'Résultats', icon: Trophy },
+                { key: 'analyse' as const, label: 'Comparaisons', icon: GitCompare },
               ]).map(({ key, label, icon: Icon }) => (
                 <button
                   key={key}
@@ -324,6 +326,14 @@ export default function JuryApp({ profile, onSignOut }: JuryAppProps) {
       {/* Main content */}
       {showWelcome ? null : appView === 'resultats' ? (
         <ResultatsPage jury={state.jury} />
+      ) : appView === 'analyse' ? (
+        <div className="h-full flex flex-col" style={{ height: 'calc(100vh - 64px)' }}>
+          <div className="flex-1 min-h-0 overflow-hidden">
+            <div className="max-w-6xl mx-auto px-4 py-4 h-full">
+              <CompareTab />
+            </div>
+          </div>
+        </div>
       ) : state.currentStep >= 5 ? (
         <div className="flex flex-col" style={{ height: 'calc(100vh - 64px)' }}>
           <div className="max-w-6xl mx-auto w-full px-4 pt-2">

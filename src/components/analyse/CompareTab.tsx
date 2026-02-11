@@ -1,7 +1,7 @@
 import { type FC, useState, useMemo } from 'react';
 import { Table, BarChart3 } from 'lucide-react';
 import { grille } from '@/data/grille-2026';
-import { getHistory } from '@/lib/storage';
+import { useHistory } from '@/contexts/HistoryContext';
 import { cn } from '@/lib/utils';
 import { CandidateSelector } from './CandidateSelector';
 import { CriteriaFilter } from './CriteriaFilter';
@@ -9,7 +9,7 @@ import { CompareTable } from './CompareTable';
 import { CompareBars } from './CompareBars';
 
 export const CompareTab: FC = () => {
-  const candidates = useMemo(() => getHistory(), []);
+  const { history: candidates } = useHistory();
   const allCriteriaIds = useMemo(
     () => new Set(grille.sections.flatMap((s) => s.criteria.map((c) => c.id))),
     [],
