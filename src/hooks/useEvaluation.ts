@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import type { JuryInfo, CandidateInfo } from '@/types';
 import { saveCurrentEvaluation, loadCurrentEvaluation, saveToHistory, updateHistoryEntry, saveJuryDefaults, loadJuryDefaults, getHistory } from '@/lib/storage';
+import { useRef } from 'react';
 
 export type TimerData = {
   expectedSeconds: number;
@@ -63,9 +64,25 @@ const loadInitialState = (): EvaluationState => {
 
 export const useEvaluation = () => {
   const [state, setState] = useState<EvaluationState>(loadInitialState);
+  // Track the history index of the current candidate (-1 = not yet saved)
+  const historyIndexRef = useRef<number>(-1);
 
   useEffect(() => {
     saveCurrentEvaluation(state);
+  }, [state]);
+
+  // Auto-save to history when reaching the summary step (step 6)
+  useEffect(() => {
+    if (state.currentStep === 6 && state.candidate.nom && Object.keys(state.scores).length > 0) {
+      if (historyIndexRef.current === -1) {
+        // First time reaching summary: add to history
+        saveToHistory(state);
+        historyIndexRef.current = getHistory().length - 1;
+      } else {
+        // Already saved: update the entry (e.g. comments changed)
+        updateHistoryEntry(historyIndexRef.current, state);
+      }
+    }
   }, [state]);
 
   const setJury = (jury: Partial<JuryInfo>) => {
@@ -143,7 +160,13 @@ export const useEvaluation = () => {
   };
 
   const resetForNextCandidate = () => {
-    saveToHistory(state);
+    // Ensure final state is saved (in case auto-save hasn't fired yet)
+    if (historyIndexRef.current >= 0) {
+      updateHistoryEntry(historyIndexRef.current, state);
+    } else if (state.candidate.nom && Object.keys(state.scores).length > 0) {
+      saveToHistory(state);
+    }
+    historyIndexRef.current = -1;
     setState((prev) => ({
       ...prev,
       currentStep: 2,
@@ -164,6 +187,8 @@ export const useEvaluation = () => {
     const history = getHistory();
     if (index >= 0 && index < history.length) {
       const entry = history[index];
+      // Mark as already saved so auto-save updates instead of duplicating
+      historyIndexRef.current = index;
       setState({
         ...initialState,
         ...entry,
@@ -175,6 +200,7 @@ export const useEvaluation = () => {
   };
 
   const restoreState = (saved: EvaluationState) => {
+    historyIndexRef.current = -1;
     setState(saved);
   };
 
