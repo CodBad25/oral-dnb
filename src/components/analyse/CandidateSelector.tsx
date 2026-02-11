@@ -10,6 +10,7 @@ interface CandidateSelectorProps {
   onToggle: (index: number) => void;
   onSelectAll: () => void;
   onDeselectAll: () => void;
+  showJury?: boolean;
 }
 
 export const CandidateSelector: FC<CandidateSelectorProps> = ({
@@ -18,6 +19,7 @@ export const CandidateSelector: FC<CandidateSelectorProps> = ({
   onToggle,
   onSelectAll,
   onDeselectAll,
+  showJury,
 }) => {
   const allSelected = selected.size === candidates.length;
 
@@ -61,6 +63,9 @@ export const CandidateSelector: FC<CandidateSelectorProps> = ({
               </span>
               <span className="flex-1 truncate font-medium text-gray-900 dark:text-white">
                 {entry.candidate.prenom} {entry.candidate.nom}
+                {showJury && entry.jury?.juryNumber && (
+                  <span className="text-[10px] text-gray-400 dark:text-gray-500 ml-1">J{entry.jury.juryNumber}</span>
+                )}
               </span>
               <span className="text-xs text-gray-500 dark:text-gray-400 tabular-nums">
                 {fmtPt(total)}/20

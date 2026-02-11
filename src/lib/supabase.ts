@@ -12,7 +12,7 @@ export const isSupabaseConfigured = Boolean(supabaseUrl && supabaseAnonKey);
 
 export type Profile = {
   id: string;
-  role: 'jury' | 'admin';
+  role: 'jury' | 'admin' | 'coordinateur';
   jury_number: string | null;
   display_name: string | null;
   created_at: string;

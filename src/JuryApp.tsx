@@ -18,6 +18,14 @@ import { ResultatsPage } from '@/components/resultats/ResultatsPage';
 import { CompareTab } from '@/components/analyse/CompareTab';
 import { WelcomeModal } from '@/components/WelcomeModal';
 
+type AppView = 'evaluation' | 'resultats' | 'analyse';
+
+const NAV_ITEMS: { key: AppView; label: string; icon: typeof ClipboardCheck }[] = [
+  { key: 'evaluation', label: 'Évaluation', icon: ClipboardCheck },
+  { key: 'resultats', label: 'Résultats', icon: Trophy },
+  { key: 'analyse', label: 'Comparer', icon: GitCompare },
+];
+
 interface JuryAppProps {
   profile: Profile;
   onSignOut: () => void;
@@ -51,7 +59,7 @@ export default function JuryApp({ profile, onSignOut }: JuryAppProps) {
   });
 
   const [showWelcome, setShowWelcome] = useState(true);
-  const [appView, setAppView] = useState<'evaluation' | 'resultats' | 'analyse'>('evaluation');
+  const [appView, setAppView] = useState<AppView>('evaluation');
   const [evalSection, setEvalSection] = useState(0);
   const [showHistory, setShowHistory] = useState(false);
   const [viewingDbId, setViewingDbId] = useState<string | null>(null);
@@ -74,7 +82,6 @@ export default function JuryApp({ profile, onSignOut }: JuryAppProps) {
 
   const toggleDarkMode = () => setIsDarkMode(!isDarkMode);
 
-  // Show loading while history loads from Supabase
   if (historyLoading) {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
@@ -125,6 +132,9 @@ export default function JuryApp({ profile, onSignOut }: JuryAppProps) {
     handleReturnToCurrent();
   };
 
+  // Whether bottom bar should be hidden (during evaluation scoring/summary to avoid conflict with action bar)
+  const hideBottomNav = showWelcome || (appView === 'evaluation' && state.currentStep >= 5);
+
   return (
     <div className={`bg-gray-50 dark:bg-gray-900 transition-colors ${appView === 'resultats' || appView === 'analyse' || state.currentStep >= 5 ? 'h-screen overflow-hidden' : 'min-h-screen'}`}>
       {showWelcome && (
@@ -144,42 +154,18 @@ export default function JuryApp({ profile, onSignOut }: JuryAppProps) {
         />
       )}
 
-      {/* Header */}
+      {/* Header — simplified, no nav tabs */}
       <header className={cn("bg-white dark:bg-gray-800 shadow-sm sticky top-0 z-50", showWelcome && "invisible")}>
-        <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
-          <h1 className="text-xl md:text-2xl font-bold text-gray-900 dark:text-white">
+        <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
+          <h1 className="text-lg md:text-xl font-bold text-gray-900 dark:text-white">
             Oral DNB 2026
           </h1>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5">
             {candidateInfo && state.currentStep >= 3 && (
               <span className="hidden md:block text-sm text-gray-500 dark:text-gray-400 mr-2">
                 {candidateInfo}
               </span>
             )}
-            <div className="flex bg-gray-100 dark:bg-gray-700 rounded-lg p-0.5 gap-0.5">
-              {([
-                { key: 'evaluation' as const, label: 'Évaluation', icon: ClipboardCheck },
-                { key: 'resultats' as const, label: 'Résultats', icon: Trophy },
-                { key: 'analyse' as const, label: 'Comparaisons', icon: GitCompare },
-              ]).map(({ key, label, icon: Icon }) => (
-                <button
-                  key={key}
-                  onClick={() => {
-                    setAppView(key);
-                    setShowHistory(false);
-                  }}
-                  className={cn(
-                    "flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs font-medium transition-colors",
-                    appView === key
-                      ? "bg-indigo-600 text-white shadow-sm"
-                      : "text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
-                  )}
-                >
-                  <Icon size={14} />
-                  <span className="hidden sm:inline">{label}</span>
-                </button>
-              ))}
-            </div>
             {appView === 'evaluation' && isViewingHistory && (
               isEditingHistory ? (
                 <span className="text-xs bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 px-2 py-1 rounded font-medium">
@@ -212,7 +198,6 @@ export default function JuryApp({ profile, onSignOut }: JuryAppProps) {
                 </span>
               </button>
             )}
-            {/* User info */}
             <span className="hidden md:block text-xs text-gray-500 dark:text-gray-400 border-l border-gray-200 dark:border-gray-600 pl-2 ml-1">
               Jury {profile.jury_number || '?'}
             </span>
@@ -222,9 +207,9 @@ export default function JuryApp({ profile, onSignOut }: JuryAppProps) {
               title="Mode sombre"
             >
               {isDarkMode ? (
-                <Sun size={20} className="text-yellow-500" />
+                <Sun size={18} className="text-yellow-500" />
               ) : (
-                <Moon size={20} className="text-gray-700" />
+                <Moon size={18} className="text-gray-700" />
               )}
             </button>
             <button
@@ -325,17 +310,19 @@ export default function JuryApp({ profile, onSignOut }: JuryAppProps) {
 
       {/* Main content */}
       {showWelcome ? null : appView === 'resultats' ? (
-        <ResultatsPage jury={state.jury} />
+        <div style={{ height: 'calc(100vh - 56px - 64px)' }}>
+          <ResultatsPage jury={state.jury} />
+        </div>
       ) : appView === 'analyse' ? (
-        <div className="h-full flex flex-col" style={{ height: 'calc(100vh - 64px)' }}>
+        <div className="h-full flex flex-col" style={{ height: 'calc(100vh - 56px - 64px)' }}>
           <div className="flex-1 min-h-0 overflow-hidden">
             <div className="max-w-6xl mx-auto px-4 py-4 h-full">
-              <CompareTab />
+              <CompareTab candidates={history} />
             </div>
           </div>
         </div>
       ) : state.currentStep >= 5 ? (
-        <div className="flex flex-col" style={{ height: 'calc(100vh - 64px)' }}>
+        <div className="flex flex-col" style={{ height: 'calc(100vh - 56px)' }}>
           <div className="max-w-6xl mx-auto w-full px-4 pt-2">
             <StepIndicator currentStep={state.currentStep} totalSteps={6} onGoToStep={goToStep} compact />
           </div>
@@ -409,7 +396,7 @@ export default function JuryApp({ profile, onSignOut }: JuryAppProps) {
           )}
         </div>
       ) : (
-        <main className="max-w-6xl mx-auto px-4 py-8">
+        <main className="max-w-6xl mx-auto px-4 py-8 pb-24">
           <StepIndicator currentStep={state.currentStep} totalSteps={6} onGoToStep={goToStep} />
 
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 md:p-8 mb-8">
@@ -454,6 +441,40 @@ export default function JuryApp({ profile, onSignOut }: JuryAppProps) {
             )}
           </div>
         </main>
+      )}
+
+      {/* Bottom Navigation Bar */}
+      {!hideBottomNav && (
+        <nav className="fixed bottom-0 left-0 right-0 z-50 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 shadow-[0_-2px_10px_rgba(0,0,0,0.05)]">
+          <div className="max-w-6xl mx-auto flex justify-around items-center h-16">
+            {NAV_ITEMS.map(({ key, label, icon: Icon }) => {
+              const isActive = appView === key;
+              return (
+                <button
+                  key={key}
+                  onClick={() => {
+                    setAppView(key);
+                    setShowHistory(false);
+                  }}
+                  className={cn(
+                    "relative flex flex-col items-center gap-0.5 px-5 py-2 rounded-xl transition-colors min-w-[72px]",
+                    isActive
+                      ? "text-indigo-600 dark:text-indigo-400"
+                      : "text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300"
+                  )}
+                >
+                  {isActive && (
+                    <span className="absolute -top-0.5 left-1/2 -translate-x-1/2 w-8 h-1 bg-indigo-600 dark:bg-indigo-400 rounded-full" />
+                  )}
+                  <Icon size={22} strokeWidth={isActive ? 2.5 : 1.8} />
+                  <span className={cn("text-[11px]", isActive ? "font-bold" : "font-medium")}>
+                    {label}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        </nav>
       )}
     </div>
   );

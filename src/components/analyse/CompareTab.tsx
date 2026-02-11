@@ -1,15 +1,19 @@
 import { type FC, useState, useMemo } from 'react';
 import { Table, BarChart3 } from 'lucide-react';
 import { grille } from '@/data/grille-2026';
-import { useHistory } from '@/contexts/HistoryContext';
+import type { EvaluationState } from '@/hooks/useEvaluation';
 import { cn } from '@/lib/utils';
 import { CandidateSelector } from './CandidateSelector';
 import { CriteriaFilter } from './CriteriaFilter';
 import { CompareTable } from './CompareTable';
 import { CompareBars } from './CompareBars';
 
-export const CompareTab: FC = () => {
-  const { history: candidates } = useHistory();
+interface CompareTabProps {
+  candidates: EvaluationState[];
+  showJury?: boolean;
+}
+
+export const CompareTab: FC<CompareTabProps> = ({ candidates, showJury }) => {
   const allCriteriaIds = useMemo(
     () => new Set(grille.sections.flatMap((s) => s.criteria.map((c) => c.id))),
     [],
@@ -75,6 +79,7 @@ export const CompareTab: FC = () => {
           onToggle={handleToggleCandidate}
           onSelectAll={handleSelectAll}
           onDeselectAll={handleDeselectAll}
+          showJury={showJury}
         />
         <div className="border-t border-gray-200 dark:border-gray-700 pt-3">
           <CriteriaFilter

@@ -1,11 +1,11 @@
 import { useState } from 'react';
-import { Loader2, AlertCircle, Shield, Users } from 'lucide-react';
+import { Loader2, AlertCircle, Shield, Users, Building } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { cn } from '@/lib/utils';
 
 type QuickAccount = {
   label: string;
-  role: 'admin' | 'jury';
+  role: 'admin' | 'jury' | 'coordinateur';
   juryNumber?: string;
   email: string;
   password: string;
@@ -13,12 +13,17 @@ type QuickAccount = {
 
 const ACCOUNTS: QuickAccount[] = [
   { label: 'Administration', role: 'admin', email: 'admin@oral-dnb.local', password: 'admin-oral-dnb' },
+  { label: "Chef d'établissement", role: 'coordinateur', email: 'coord@oral-dnb.local', password: 'coord-oral-dnb' },
   { label: 'Jury 1', role: 'jury', juryNumber: '1', email: 'jury1@oral-dnb.local', password: 'jury1-oral-dnb' },
   { label: 'Jury 2', role: 'jury', juryNumber: '2', email: 'jury2@oral-dnb.local', password: 'jury2-oral-dnb' },
   { label: 'Jury 3', role: 'jury', juryNumber: '3', email: 'jury3@oral-dnb.local', password: 'jury3-oral-dnb' },
   { label: 'Jury 4', role: 'jury', juryNumber: '4', email: 'jury4@oral-dnb.local', password: 'jury4-oral-dnb' },
   { label: 'Jury 5', role: 'jury', juryNumber: '5', email: 'jury5@oral-dnb.local', password: 'jury5-oral-dnb' },
 ];
+
+const ADMIN = ACCOUNTS[0];
+const COORD = ACCOUNTS[1];
+const JURIES = ACCOUNTS.slice(2);
 
 export const LoginPage = () => {
   const [loading, setLoading] = useState<string | null>(null);
@@ -28,14 +33,12 @@ export const LoginPage = () => {
     setLoading(account.email);
     setError('');
 
-    // Try to sign in first
     const { error: signInError } = await supabase.auth.signInWithPassword({
       email: account.email,
       password: account.password,
     });
 
     if (signInError) {
-      // Account doesn't exist yet — create it
       const { error: signUpError } = await supabase.auth.signUp({
         email: account.email,
         password: account.password,
@@ -53,7 +56,6 @@ export const LoginPage = () => {
         setLoading(null);
         return;
       }
-      // signUp auto-signs in when email confirmation is disabled
     }
 
     setLoading(null);
@@ -72,7 +74,6 @@ export const LoginPage = () => {
           </p>
         </div>
 
-        {/* Quick access buttons */}
         <div className="px-8 pb-6 space-y-3">
           {error && (
             <div className="flex items-center gap-2 bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 rounded-lg px-4 py-3 text-sm">
@@ -81,29 +82,29 @@ export const LoginPage = () => {
             </div>
           )}
 
-          {/* Admin */}
+          {/* Chef d'établissement */}
           <button
-            onClick={() => handleQuickLogin(ACCOUNTS[0])}
+            onClick={() => handleQuickLogin(COORD)}
             disabled={loading !== null}
             className={cn(
               "w-full flex items-center gap-4 p-4 rounded-xl border-2 transition-colors",
-              "bg-purple-50 dark:bg-purple-900/30 border-purple-200 dark:border-purple-700",
-              "hover:bg-purple-100 dark:hover:bg-purple-900/50",
+              "bg-teal-50 dark:bg-teal-900/30 border-teal-200 dark:border-teal-700",
+              "hover:bg-teal-100 dark:hover:bg-teal-900/50",
               "disabled:opacity-50 disabled:cursor-not-allowed"
             )}
           >
-            <div className="p-3 bg-purple-600 rounded-xl text-white shrink-0">
-              {loading === ACCOUNTS[0].email ? <Loader2 size={22} className="animate-spin" /> : <Shield size={22} />}
+            <div className="p-3 bg-teal-600 rounded-xl text-white shrink-0">
+              {loading === COORD.email ? <Loader2 size={22} className="animate-spin" /> : <Building size={22} />}
             </div>
             <div className="text-left">
-              <p className="font-semibold text-gray-900 dark:text-white">Administration</p>
-              <p className="text-xs text-gray-500 dark:text-gray-400">Vue globale, harmonisation, comptes</p>
+              <p className="font-semibold text-gray-900 dark:text-white">Chef d'établissement</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400">Vue globale, harmonisation, comparaisons</p>
             </div>
           </button>
 
           {/* Jury buttons */}
           <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-            {ACCOUNTS.slice(1).map((account) => (
+            {JURIES.map((account) => (
               <button
                 key={account.email}
                 onClick={() => handleQuickLogin(account)}
@@ -124,9 +125,28 @@ export const LoginPage = () => {
               </button>
             ))}
           </div>
+
+          {/* Admin (discret) */}
+          <button
+            onClick={() => handleQuickLogin(ADMIN)}
+            disabled={loading !== null}
+            className={cn(
+              "w-full flex items-center gap-3 p-3 rounded-xl border transition-colors",
+              "bg-gray-50 dark:bg-gray-700/50 border-gray-200 dark:border-gray-600",
+              "hover:bg-gray-100 dark:hover:bg-gray-700",
+              "disabled:opacity-50 disabled:cursor-not-allowed"
+            )}
+          >
+            <div className="p-2 bg-gray-500 rounded-lg text-white shrink-0">
+              {loading === ADMIN.email ? <Loader2 size={16} className="animate-spin" /> : <Shield size={16} />}
+            </div>
+            <div className="text-left">
+              <p className="font-medium text-sm text-gray-700 dark:text-gray-300">Administration</p>
+              <p className="text-[10px] text-gray-400 dark:text-gray-500">Comptes, imports, configuration</p>
+            </div>
+          </button>
         </div>
 
-        {/* Footer */}
         <div className="px-8 pb-6">
           <p className="text-[10px] text-center text-gray-400 dark:text-gray-500">
             Les comptes sont créés automatiquement au premier accès

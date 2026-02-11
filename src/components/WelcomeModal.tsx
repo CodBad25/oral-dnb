@@ -106,7 +106,7 @@ export const WelcomeModal = ({ onStartEvaluation, onViewResults, onViewAnalyse }
             </div>
             <div className="text-left flex-1">
               <p className="font-semibold text-gray-900 dark:text-white">
-                Analyse avancée
+                Comparer les candidats
               </p>
               <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
                 Comparer les candidats, synthèse multi-jury
