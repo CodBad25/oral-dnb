@@ -67,7 +67,7 @@ export const CompareBars: FC<CompareBarsProps> = ({
               const pct = criterion.maxPoints > 0 ? (score / criterion.maxPoints) * 100 : 0;
               return (
                 <div key={i} className="flex items-center gap-2">
-                  <span className="w-[90px] text-xs truncate text-gray-600 dark:text-gray-400">
+                  <span className="w-[60px] md:w-[90px] text-xs truncate text-gray-600 dark:text-gray-400">
                     {entry.candidate.prenom}
                   </span>
                   <div className="flex-1 bg-gray-200 dark:bg-gray-700 rounded-full h-5 overflow-hidden">
@@ -101,7 +101,7 @@ export const CompareBars: FC<CompareBarsProps> = ({
             const pct = (total / 20) * 100;
             return (
               <div key={i} className="flex items-center gap-2">
-                <span className="w-[90px] text-xs truncate font-medium text-gray-700 dark:text-gray-300">
+                <span className="w-[60px] md:w-[90px] text-xs truncate font-medium text-gray-700 dark:text-gray-300">
                   {entry.candidate.prenom} {entry.candidate.nom.charAt(0)}.
                 </span>
                 <div className="flex-1 bg-gray-200 dark:bg-gray-700 rounded-full h-6 overflow-hidden">

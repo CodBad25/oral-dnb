@@ -104,7 +104,7 @@ export const PrincipalDashboard = ({ onSignOut }: PrincipalDashboardProps) => {
 
         {/* Tabs */}
         <div className="max-w-7xl mx-auto px-4 pb-3">
-          <div className="flex gap-1">
+          <div className="flex gap-1 overflow-x-auto">
             {tabs.map(({ key, label, icon: Icon }) => (
               <button
                 key={key}
@@ -113,7 +113,7 @@ export const PrincipalDashboard = ({ onSignOut }: PrincipalDashboardProps) => {
                   if (key !== 'jury') setSelectedJury(null);
                 }}
                 className={cn(
-                  "flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors",
+                  "flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors flex-shrink-0 whitespace-nowrap",
                   activeTab === key
                     ? "bg-teal-600 text-white"
                     : "text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"

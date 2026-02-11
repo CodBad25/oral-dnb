@@ -33,7 +33,7 @@ export const CompareTable: FC<CompareTableProps> = ({
       <table className="w-full border-collapse text-sm">
         <thead>
           <tr className="bg-gray-800 dark:bg-gray-900 text-white">
-            <th className="border border-gray-600 p-2 text-left text-xs font-semibold min-w-[180px]">
+            <th className="border border-gray-600 p-2 text-left text-xs font-semibold min-w-[120px] md:min-w-[180px]">
               Critère
             </th>
             {selected.map((entry, i) => (

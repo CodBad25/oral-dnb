@@ -1,5 +1,5 @@
 import { type FC, useState, useMemo } from 'react';
-import { Table, BarChart3 } from 'lucide-react';
+import { Table, BarChart3, ChevronDown, ChevronUp, Users } from 'lucide-react';
 import { grille } from '@/data/grille-2026';
 import type { EvaluationState } from '@/hooks/useEvaluation';
 import { cn } from '@/lib/utils';
@@ -32,6 +32,7 @@ export const CompareTab: FC<CompareTabProps> = ({ candidates, showJury }) => {
   );
 
   const [viewMode, setViewMode] = useState<'tableau' | 'barres'>('tableau');
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const handleToggleCandidate = (index: number) => {
     setSelected((prev) => {
@@ -70,23 +71,42 @@ export const CompareTab: FC<CompareTabProps> = ({ candidates, showJury }) => {
   }
 
   return (
-    <div className="flex gap-4 h-full">
+    <div className="flex flex-col md:flex-row gap-4 h-full">
       {/* Sidebar */}
-      <div className="w-[220px] flex-shrink-0 space-y-4 overflow-y-auto">
-        <CandidateSelector
-          candidates={candidates}
-          selected={selected}
-          onToggle={handleToggleCandidate}
-          onSelectAll={handleSelectAll}
-          onDeselectAll={handleDeselectAll}
-          showJury={showJury}
-        />
-        <div className="border-t border-gray-200 dark:border-gray-700 pt-3">
-          <CriteriaFilter
-            selectedIds={selectedCriteria}
-            onToggle={handleToggleCriterion}
-            onSelectAll={handleToggleAllCriteria}
+      <div className="md:w-[220px] md:flex-shrink-0 md:overflow-y-auto">
+        {/* Mobile collapse toggle */}
+        <button
+          onClick={() => setSidebarOpen((o) => !o)}
+          className="w-full flex items-center justify-between px-3 py-2 bg-gray-100 dark:bg-gray-800 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 md:hidden"
+        >
+          <span className="flex items-center gap-2">
+            <Users size={14} />
+            {selected.size} candidat{selected.size > 1 ? 's' : ''} sélectionné{selected.size > 1 ? 's' : ''}
+          </span>
+          {sidebarOpen ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+        </button>
+
+        {/* Sidebar content: always visible on md+, toggled on mobile */}
+        <div className={cn(
+          'space-y-4 overflow-y-auto',
+          sidebarOpen ? 'block mt-2' : 'hidden',
+          'md:block md:mt-0',
+        )}>
+          <CandidateSelector
+            candidates={candidates}
+            selected={selected}
+            onToggle={handleToggleCandidate}
+            onSelectAll={handleSelectAll}
+            onDeselectAll={handleDeselectAll}
+            showJury={showJury}
           />
+          <div className="border-t border-gray-200 dark:border-gray-700 pt-3">
+            <CriteriaFilter
+              selectedIds={selectedCriteria}
+              onToggle={handleToggleCriterion}
+              onSelectAll={handleToggleAllCriteria}
+            />
+          </div>
         </div>
       </div>
 
@@ -121,7 +141,7 @@ export const CompareTab: FC<CompareTabProps> = ({ candidates, showJury }) => {
         </div>
 
         {/* Content */}
-        <div className="overflow-y-auto" style={{ maxHeight: 'calc(100vh - 200px)' }}>
+        <div className="overflow-y-auto max-h-[calc(100vh-280px)] md:max-h-[calc(100vh-200px)]">
           {viewMode === 'tableau' ? (
             <CompareTable
               candidates={candidates}
