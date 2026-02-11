@@ -59,10 +59,13 @@ const measureTextHeight = (doc: jsPDF, text: string, maxW: number, fontSize: num
   return lines.length * fontSize * 0.38;
 };
 
-// ── Main export ──────────────────────────────────────────────
+// ── Render one candidate (2 pages) into an existing doc ─────
 
-export const exportPDF = (state: EvaluationState) => {
-  const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
+const renderCandidate = (doc: jsPDF, state: EvaluationState, isFirst: boolean) => {
+  if (!isFirst) {
+    doc.addPage('a4', 'landscape');
+  }
+
   doc.setDrawColor(0, 0, 0);
   doc.setLineWidth(0.3);
 
@@ -77,22 +80,16 @@ export const exportPDF = (state: EvaluationState) => {
   // ── Candidate info ──
   doc.setFontSize(10);
   doc.setFont('helvetica', 'bold');
-  const candLine1Left = `CANDIDAT : ${state.candidate.nom}`;
-  const candLine1Mid = `PRENOM : ${state.candidate.prenom}`;
-  const candLine1Right = `Classe : ${state.candidate.classe}`;
-  doc.text(candLine1Left, MARGIN + 10, y + 5);
-  doc.text(candLine1Mid, PW / 2 - 20, y + 5);
-  doc.text(candLine1Right, PW - MARGIN - 40, y + 5);
+  doc.text(`CANDIDAT : ${state.candidate.nom}`, MARGIN + 10, y + 5);
+  doc.text(`PRENOM : ${state.candidate.prenom}`, PW / 2 - 20, y + 5);
+  doc.text(`Classe : ${state.candidate.classe}`, PW - MARGIN - 40, y + 5);
   y += 7;
 
   doc.setFontSize(9);
   doc.setFont('helvetica', 'normal');
-  const juryLine = `Jury : ${state.jury.juryNumber}`;
-  const horLine = `Horaires : ${state.candidate.horaire || ''}`;
-  const salLine = `Salle : ${state.jury.salle}`;
-  doc.text(juryLine, MARGIN + 50, y + 4);
-  doc.text(horLine, PW / 2 - 20, y + 4);
-  doc.text(salLine, PW / 2 + 40, y + 4);
+  doc.text(`Jury : ${state.jury.juryNumber}`, MARGIN + 50, y + 4);
+  doc.text(`Horaires : ${state.candidate.horaire || ''}`, PW / 2 - 20, y + 4);
+  doc.text(`Salle : ${state.jury.salle}`, PW / 2 + 40, y + 4);
   y += 8;
 
   // ── Helper: draw table header row ──
@@ -130,7 +127,6 @@ export const exportPDF = (state: EvaluationState) => {
     const POINTS_FONT = 7;
     const pad = 2;
 
-    // Calculate row height for descriptions
     doc.setFontSize(DESC_FONT);
     const critHeight = measureTextHeight(doc, '- ' + criterion.title, COL_W[0] - 3, DESC_FONT);
     const levelHeights = criterion.levels.map((l) =>
@@ -140,7 +136,6 @@ export const exportPDF = (state: EvaluationState) => {
     const pointsRowH = 5;
     const totalRowH = maxDescH + pointsRowH + pad * 2 + 2;
 
-    // Check for page break
     if (y + totalRowH > PH - 15) {
       doc.addPage('a4', 'landscape');
       y = MARGIN;
@@ -149,9 +144,7 @@ export const exportPDF = (state: EvaluationState) => {
 
     const rowTop = y;
 
-    // Draw cell backgrounds and borders
     for (let i = 0; i < 6; i++) {
-      // Highlight selected level
       let fill: [number, number, number] | undefined;
       if (i >= 1 && i <= 4) {
         const levelIdx = i - 1;
@@ -165,14 +158,12 @@ export const exportPDF = (state: EvaluationState) => {
       drawRect(doc, COL_X[i], rowTop, COL_W[i], totalRowH, fill);
     }
 
-    // Draw criterion title
     doc.setTextColor(0, 0, 0);
     doc.setFontSize(DESC_FONT);
     doc.setFont('helvetica', 'bold');
     const critLines = doc.splitTextToSize('- ' + criterion.title, COL_W[0] - 4);
     doc.text(critLines, COL_X[0] + 2, rowTop + pad + 3);
 
-    // Draw level descriptions
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(DESC_FONT);
     for (let li = 0; li < criterion.levels.length; li++) {
@@ -182,7 +173,6 @@ export const exportPDF = (state: EvaluationState) => {
       doc.text(descLines, COL_X[colIdx] + 2, rowTop + pad + 3);
     }
 
-    // Draw points values at the bottom of each level cell
     const pointsY = rowTop + totalRowH - pointsRowH - 1;
     doc.setFontSize(POINTS_FONT);
     doc.setFont('helvetica', 'bold');
@@ -191,12 +181,9 @@ export const exportPDF = (state: EvaluationState) => {
       const level = criterion.levels[li];
       const colIdx = li + 1;
       const ptText = `${fmtPt(level.points)} point${level.points > 1 ? 's' : ''}`;
-
-      // Draw underlined point value box
       const isSelected = selectedPoints === level.points || (li === 0 && selectedPoints === 0);
 
       if (isSelected) {
-        // Bold + filled box for selected
         const tw = doc.getTextWidth(ptText) + 4;
         const bx = COL_X[colIdx] + COL_W[colIdx] - tw - 2;
         doc.setFillColor(...HIGHLIGHT_COLORS[level.color]);
@@ -205,23 +192,19 @@ export const exportPDF = (state: EvaluationState) => {
         doc.setFont('helvetica', 'bold');
         doc.text(ptText, bx + 2, pointsY + 2.5);
       } else {
-        // Normal underlined text
         doc.setFont('helvetica', 'normal');
         const tw = doc.getTextWidth(ptText);
         const tx = COL_X[colIdx] + COL_W[colIdx] - tw - 3;
         doc.text(ptText, tx, pointsY + 2.5);
-        // Underline
         doc.setLineWidth(0.2);
         doc.line(tx - 0.5, pointsY + 3.5, tx + tw + 0.5, pointsY + 3.5);
         doc.setLineWidth(0.3);
       }
     }
 
-    // Draw barème
     doc.setFontSize(9);
     doc.setFont('helvetica', 'normal');
-    const barText = `/${criterion.maxPoints}`;
-    doc.text(barText, COL_X[5] + COL_W[5] / 2, rowTop + totalRowH / 2 + 1, { align: 'center' });
+    doc.text(`/${criterion.maxPoints}`, COL_X[5] + COL_W[5] / 2, rowTop + totalRowH / 2 + 1, { align: 'center' });
 
     y += totalRowH;
   };
@@ -234,7 +217,6 @@ export const exportPDF = (state: EvaluationState) => {
     doc.setFont('helvetica', 'bold');
     doc.text(label, MARGIN + 2, y + 5.5);
 
-    // Score
     let scoreText = `/${maxPts}`;
     if (actualPts !== undefined) {
       scoreText = `${fmtPt(actualPts)}   /${maxPts}`;
@@ -309,13 +291,29 @@ export const exportPDF = (state: EvaluationState) => {
     y
   );
 
-  // Signature lines
   doc.setLineWidth(0.3);
   doc.line(MARGIN + 10, y + 8, MARGIN + 100, y + 8);
   doc.line(PW - MARGIN - 100, y + 8, PW - MARGIN - 10, y + 8);
+};
 
-  // Save
+// ── Single candidate PDF ────────────────────────────────────
+
+export const exportPDF = (state: EvaluationState) => {
+  const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
+  renderCandidate(doc, state, true);
   const fileName = `evaluation_${state.candidate.nom}_${state.candidate.prenom}.pdf`.replace(/\s/g, '_');
+  doc.save(fileName);
+};
+
+// ── All candidates PDF (one file, 2 pages per candidate) ────
+
+export const exportAllPDF = (history: EvaluationState[]) => {
+  if (history.length === 0) return;
+  const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
+  history.forEach((state, i) => {
+    renderCandidate(doc, state, i === 0);
+  });
+  const fileName = `evaluations_oral_dnb_${new Date().toISOString().slice(0, 10)}.pdf`;
   doc.save(fileName);
 };
 

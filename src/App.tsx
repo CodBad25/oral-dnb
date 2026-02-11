@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Moon, Sun, Users, ArrowLeft, Save, Download, BarChart3 } from 'lucide-react';
+import { Moon, Sun, Users, ArrowLeft, Save, Download, BarChart3, Pencil } from 'lucide-react';
 import { useEvaluation } from '@/hooks/useEvaluation';
 import { grille } from '@/data/grille-2026';
 import { getHistory } from '@/lib/storage';
@@ -12,7 +12,7 @@ import { EvaluationGrid } from '@/components/EvaluationGrid';
 import { FloatingScoreBar } from '@/components/FloatingScoreBar';
 import { Summary } from '@/components/Summary';
 import { cn } from '@/lib/utils';
-import { exportCSV } from '@/lib/export';
+import { exportCSV, exportAllPDF } from '@/lib/export';
 import { AnalysePage } from '@/components/analyse/AnalysePage';
 
 export default function App() {
@@ -45,6 +45,7 @@ export default function App() {
   const [evalSection, setEvalSection] = useState(0);
   const [showHistory, setShowHistory] = useState(false);
   const [viewingHistoryIndex, setViewingHistoryIndex] = useState<number | null>(null);
+  const [isEditingHistory, setIsEditingHistory] = useState(false);
   const [savedState, setSavedState] = useState<EvaluationState | null>(null);
 
   useEffect(() => {
@@ -87,6 +88,7 @@ export default function App() {
       setSavedState({ ...state });
     }
     setViewingHistoryIndex(index);
+    setIsEditingHistory(false);
     loadFromHistory(index);
     setShowHistory(false);
   };
@@ -96,6 +98,7 @@ export default function App() {
       restoreState(savedState);
     }
     setViewingHistoryIndex(null);
+    setIsEditingHistory(false);
     setSavedState(null);
   };
 
@@ -143,9 +146,19 @@ export default function App() {
               )}
             </button>
             {appView === 'evaluation' && isViewingHistory && (
-              <span className="text-xs bg-amber-100 dark:bg-amber-900 text-amber-800 dark:text-amber-200 px-2 py-1 rounded font-medium">
-                Consultation
-              </span>
+              isEditingHistory ? (
+                <span className="text-xs bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 px-2 py-1 rounded font-medium">
+                  Modification
+                </span>
+              ) : (
+                <button
+                  onClick={() => setIsEditingHistory(true)}
+                  className="flex items-center gap-1 text-xs bg-amber-100 dark:bg-amber-900 text-amber-800 dark:text-amber-200 px-2 py-1 rounded font-medium hover:bg-amber-200 dark:hover:bg-amber-800 transition-colors"
+                >
+                  <Pencil size={10} />
+                  Modifier
+                </button>
+              )
             )}
             {appView === 'evaluation' && history.length > 0 && (
               <button
@@ -200,6 +213,13 @@ export default function App() {
                       <span>Max : <strong className="text-gray-700 dark:text-gray-200">{fmtPt(max)}</strong></span>
                     </div>
                   )}
+                  <button
+                    onClick={() => exportAllPDF(history)}
+                    className="flex items-center gap-1 px-2 py-1 text-xs bg-red-600 hover:bg-red-700 text-white rounded transition-colors font-medium"
+                  >
+                    <Download size={12} />
+                    Tous PDF
+                  </button>
                   <button
                     onClick={() => exportCSV(history)}
                     className="flex items-center gap-1 px-2 py-1 text-xs bg-blue-600 hover:bg-blue-700 text-white rounded transition-colors font-medium"
@@ -274,7 +294,7 @@ export default function App() {
                 onScoreChange={setScore}
                 sectionIndex={evalSection}
                 onSectionChange={setEvalSection}
-                readOnly={isViewingHistory}
+                readOnly={isViewingHistory && !isEditingHistory}
               />
             )}
 
