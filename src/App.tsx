@@ -3,12 +3,12 @@ import { useAuth } from '@/hooks/useAuth';
 import { isSupabaseConfigured } from '@/lib/supabase';
 import { LoginPage } from '@/components/auth/LoginPage';
 import { AdminDashboard } from '@/components/admin/AdminDashboard';
-import { CoordinateurDashboard } from '@/components/coordinateur/CoordinateurDashboard';
+import { PrincipalDashboard } from '@/components/principal/PrincipalDashboard';
 import { HistoryProvider } from '@/contexts/HistoryContext';
 import JuryApp from '@/JuryApp';
 
 export default function App() {
-  const { profile, loading, signOut, isAdmin, isCoordinateur } = useAuth();
+  const { profile, loading, signOut, isAdmin, isPrincipal } = useAuth();
 
   // Supabase not configured
   if (!isSupabaseConfigured) {
@@ -47,9 +47,9 @@ export default function App() {
     return <AdminDashboard onSignOut={() => signOut()} />;
   }
 
-  // Coordinateur (chef d'établissement)
-  if (isCoordinateur) {
-    return <CoordinateurDashboard onSignOut={() => signOut()} />;
+  // Principal (chef d'établissement)
+  if (isPrincipal) {
+    return <PrincipalDashboard onSignOut={() => signOut()} />;
   }
 
   // Jury

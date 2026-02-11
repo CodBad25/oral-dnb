@@ -65,6 +65,6 @@ export const useAuth = () => {
     signOut,
     isAdmin: profile?.role === 'admin',
     isJury: profile?.role === 'jury',
-    isCoordinateur: profile?.role === 'coordinateur',
+    isPrincipal: profile?.role === 'principal',
   };
 };

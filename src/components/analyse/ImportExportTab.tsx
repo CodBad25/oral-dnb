@@ -104,7 +104,7 @@ export const ImportExportTab: FC<ImportExportTabProps> = ({
         </h3>
         <p className="text-xs text-gray-500 dark:text-gray-400 mb-3">
           Téléchargez un fichier JSON contenant toutes les évaluations de votre jury.
-          Partagez-le avec le coordinateur pour la synthèse.
+          Partagez-le avec le principal pour la synthèse.
         </p>
         <button
           onClick={handleExport}

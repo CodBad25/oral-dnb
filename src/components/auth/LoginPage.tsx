@@ -5,7 +5,7 @@ import { cn } from '@/lib/utils';
 
 type QuickAccount = {
   label: string;
-  role: 'admin' | 'jury' | 'coordinateur';
+  role: 'admin' | 'jury' | 'principal';
   juryNumber?: string;
   email: string;
   password: string;
@@ -13,7 +13,7 @@ type QuickAccount = {
 
 const ACCOUNTS: QuickAccount[] = [
   { label: 'Administration', role: 'admin', email: 'admin@oral-dnb.local', password: 'admin-oral-dnb' },
-  { label: "Chef d'établissement", role: 'coordinateur', email: 'coord@oral-dnb.local', password: 'coord-oral-dnb' },
+  { label: "Chef d'établissement", role: 'principal', email: 'principal@oral-dnb.local', password: 'principal-oral-dnb' },
   { label: 'Jury 1', role: 'jury', juryNumber: '1', email: 'jury1@oral-dnb.local', password: 'jury1-oral-dnb' },
   { label: 'Jury 2', role: 'jury', juryNumber: '2', email: 'jury2@oral-dnb.local', password: 'jury2-oral-dnb' },
   { label: 'Jury 3', role: 'jury', juryNumber: '3', email: 'jury3@oral-dnb.local', password: 'jury3-oral-dnb' },

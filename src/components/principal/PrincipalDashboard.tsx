@@ -13,11 +13,11 @@ import { CompareTab } from '@/components/analyse/CompareTab';
 
 type Tab = 'global' | 'jury' | 'harmonisation' | 'comparaisons';
 
-interface CoordinateurDashboardProps {
+interface PrincipalDashboardProps {
   onSignOut: () => void;
 }
 
-export const CoordinateurDashboard = ({ onSignOut }: CoordinateurDashboardProps) => {
+export const PrincipalDashboard = ({ onSignOut }: PrincipalDashboardProps) => {
   const [allEvaluations, setAllEvaluations] = useState<(EvaluationState & { _dbId?: string })[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<Tab>('global');
@@ -59,7 +59,7 @@ export const CoordinateurDashboard = ({ onSignOut }: CoordinateurDashboardProps)
   ];
 
   const defaultJury = {
-    prof1Nom: 'Coordinateur', prof1Prenom: '', prof2Nom: '', prof2Prenom: '',
+    prof1Nom: 'Principal', prof1Prenom: '', prof2Nom: '', prof2Prenom: '',
     juryNumber: 'tous', date: '', salle: '',
   };
 
@@ -70,7 +70,7 @@ export const CoordinateurDashboard = ({ onSignOut }: CoordinateurDashboardProps)
         <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
           <div>
             <h1 className="text-xl font-bold text-gray-900 dark:text-white">
-              Coordinateur — Oral DNB 2026
+              Principal — Oral DNB 2026
             </h1>
             <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
               {allEvaluations.length} candidat{allEvaluations.length > 1 ? 's' : ''} · {juryNumbers.length} jury{juryNumbers.length > 1 ? 's' : ''}
