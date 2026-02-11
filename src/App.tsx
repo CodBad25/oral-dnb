@@ -42,7 +42,9 @@ export default function App() {
     return false;
   });
 
-  const [appView, setAppView] = useState<'evaluation' | 'resultats' | 'analyse'>('evaluation');
+  const [appView, setAppView] = useState<'evaluation' | 'resultats' | 'analyse'>(() =>
+    getHistory().length > 0 ? 'resultats' : 'evaluation'
+  );
   const [evalSection, setEvalSection] = useState(0);
   const [showHistory, setShowHistory] = useState(false);
   const [viewingHistoryIndex, setViewingHistoryIndex] = useState<number | null>(null);
