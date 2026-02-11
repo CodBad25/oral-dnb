@@ -3,7 +3,7 @@ import type { JuryInfo } from '@/types';
 import { getHistory } from '@/lib/storage';
 import { QuickStats } from './QuickStats';
 import { ExportSection } from './ExportSection';
-import { RadarChart } from './RadarChart';
+import { CriteriaMeanBars } from './CriteriaMeanBars';
 import { MasteryPies } from './MasteryPies';
 import { CandidateRanking } from './CandidateRanking';
 
@@ -33,7 +33,7 @@ export const ResultatsPage = ({ jury }: ResultatsPageProps) => {
       <div className="max-w-6xl mx-auto px-4 py-6 space-y-6">
         <QuickStats history={history} />
         <ExportSection jury={jury} />
-        <RadarChart history={history} />
+        <CriteriaMeanBars history={history} />
         <MasteryPies history={history} />
         <CandidateRanking history={history} />
       </div>
