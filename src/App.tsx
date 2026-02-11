@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Moon, Sun, Users, ArrowLeft, Save, Download, BarChart3, Pencil } from 'lucide-react';
+import { Moon, Sun, Users, ArrowLeft, Save, Download, BarChart3, Pencil, Trophy, ClipboardCheck } from 'lucide-react';
 import { useEvaluation } from '@/hooks/useEvaluation';
 import { grille } from '@/data/grille-2026';
 import { getHistory } from '@/lib/storage';
@@ -14,6 +14,7 @@ import { Summary } from '@/components/Summary';
 import { cn } from '@/lib/utils';
 import { exportCSV, exportAllPDF } from '@/lib/export';
 import { AnalysePage } from '@/components/analyse/AnalysePage';
+import { ResultatsPage } from '@/components/resultats/ResultatsPage';
 
 export default function App() {
   const {
@@ -41,7 +42,7 @@ export default function App() {
     return false;
   });
 
-  const [appView, setAppView] = useState<'evaluation' | 'analyse'>('evaluation');
+  const [appView, setAppView] = useState<'evaluation' | 'resultats' | 'analyse'>('evaluation');
   const [evalSection, setEvalSection] = useState(0);
   const [showHistory, setShowHistory] = useState(false);
   const [viewingHistoryIndex, setViewingHistoryIndex] = useState<number | null>(null);
@@ -110,7 +111,7 @@ export default function App() {
   };
 
   return (
-    <div className={`bg-gray-50 dark:bg-gray-900 transition-colors ${appView === 'analyse' || state.currentStep >= 5 ? 'h-screen overflow-hidden' : 'min-h-screen'}`}>
+    <div className={`bg-gray-50 dark:bg-gray-900 transition-colors ${appView !== 'evaluation' || state.currentStep >= 5 ? 'h-screen overflow-hidden' : 'min-h-screen'}`}>
       {/* Header */}
       <header className="bg-white dark:bg-gray-800 shadow-sm sticky top-0 z-50">
         <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
@@ -123,28 +124,32 @@ export default function App() {
                 {candidateInfo}
               </span>
             )}
-            <button
-              onClick={() => {
-                setAppView(appView === 'evaluation' ? 'analyse' : 'evaluation');
-                setShowHistory(false);
-              }}
-              className={cn(
-                "flex items-center gap-1.5 rounded-lg transition-colors",
-                appView === 'analyse'
-                  ? "px-3 py-1.5 bg-indigo-600 text-white hover:bg-indigo-700 font-medium text-sm"
-                  : "p-2 hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300"
-              )}
-              title={appView === 'analyse' ? 'Retour aux évaluations' : 'Analyse'}
-            >
-              {appView === 'analyse' ? (
-                <>
-                  <ArrowLeft size={16} />
-                  <span>Évaluations</span>
-                </>
-              ) : (
-                <BarChart3 size={20} />
-              )}
-            </button>
+            {history.length > 0 && (
+              <div className="flex bg-gray-100 dark:bg-gray-700 rounded-lg p-0.5 gap-0.5">
+                {([
+                  { key: 'evaluation' as const, label: 'Évaluation', icon: ClipboardCheck },
+                  { key: 'resultats' as const, label: 'Résultats', icon: Trophy },
+                  { key: 'analyse' as const, label: 'Analyse', icon: BarChart3 },
+                ]).map(({ key, label, icon: Icon }) => (
+                  <button
+                    key={key}
+                    onClick={() => {
+                      setAppView(key);
+                      setShowHistory(false);
+                    }}
+                    className={cn(
+                      "flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs font-medium transition-colors",
+                      appView === key
+                        ? "bg-indigo-600 text-white shadow-sm"
+                        : "text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
+                    )}
+                  >
+                    <Icon size={14} />
+                    <span className="hidden sm:inline">{label}</span>
+                  </button>
+                ))}
+              </div>
+            )}
             {appView === 'evaluation' && isViewingHistory && (
               isEditingHistory ? (
                 <span className="text-xs bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 px-2 py-1 rounded font-medium">
@@ -279,6 +284,8 @@ export default function App() {
       {/* Main content */}
       {appView === 'analyse' ? (
         <AnalysePage />
+      ) : appView === 'resultats' ? (
+        <ResultatsPage jury={state.jury} />
       ) : state.currentStep >= 5 ? (
         <div className="flex flex-col" style={{ height: 'calc(100vh - 64px)' }}>
           {/* Compact step indicator */}
