@@ -89,8 +89,8 @@ export const CompareTab: FC<CompareTabProps> = ({ candidates, showJury }) => {
         {/* Sidebar content: always visible on md+, toggled on mobile */}
         <div className={cn(
           'space-y-4 overflow-y-auto',
-          sidebarOpen ? 'block mt-2' : 'hidden',
-          'md:block md:mt-0',
+          sidebarOpen ? 'block mt-2 max-h-[50vh] border border-gray-200 dark:border-gray-700 rounded-lg p-3' : 'hidden',
+          'md:block md:mt-0 md:max-h-none md:border-0 md:p-0',
         )}>
           <CandidateSelector
             candidates={candidates}

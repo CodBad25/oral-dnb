@@ -51,11 +51,11 @@ export const PrincipalDashboard = ({ onSignOut }: PrincipalDashboardProps) => {
     ? allEvaluations.filter((e) => e.jury.juryNumber === selectedJury)
     : allEvaluations;
 
-  const tabs: { key: Tab; label: string; icon: typeof Globe }[] = [
-    { key: 'global', label: 'Vue globale', icon: Globe },
-    { key: 'jury', label: 'Par jury', icon: Users },
-    { key: 'harmonisation', label: 'Harmonisation', icon: BarChart3 },
-    { key: 'comparaisons', label: 'Comparaisons', icon: GitCompare },
+  const tabs: { key: Tab; label: string; shortLabel: string; icon: typeof Globe }[] = [
+    { key: 'global', label: 'Vue globale', shortLabel: 'Global', icon: Globe },
+    { key: 'jury', label: 'Par jury', shortLabel: 'Jurys', icon: Users },
+    { key: 'harmonisation', label: 'Harmonisation', shortLabel: 'Harmo.', icon: BarChart3 },
+    { key: 'comparaisons', label: 'Comparaisons', shortLabel: 'Comparer', icon: GitCompare },
   ];
 
   const defaultJury = {
@@ -104,8 +104,8 @@ export const PrincipalDashboard = ({ onSignOut }: PrincipalDashboardProps) => {
 
         {/* Tabs */}
         <div className="max-w-7xl mx-auto px-4 pb-3">
-          <div className="flex gap-1 overflow-x-auto">
-            {tabs.map(({ key, label, icon: Icon }) => (
+          <div className="flex gap-1">
+            {tabs.map(({ key, label, shortLabel, icon: Icon }) => (
               <button
                 key={key}
                 onClick={() => {
@@ -113,14 +113,15 @@ export const PrincipalDashboard = ({ onSignOut }: PrincipalDashboardProps) => {
                   if (key !== 'jury') setSelectedJury(null);
                 }}
                 className={cn(
-                  "flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors flex-shrink-0 whitespace-nowrap",
+                  "flex items-center gap-1 px-2.5 py-2 rounded-lg text-sm font-medium transition-colors whitespace-nowrap",
                   activeTab === key
                     ? "bg-teal-600 text-white"
                     : "text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
                 )}
               >
                 <Icon size={15} />
-                {label}
+                <span className="hidden sm:inline">{label}</span>
+                <span className="sm:hidden">{shortLabel}</span>
               </button>
             ))}
           </div>
