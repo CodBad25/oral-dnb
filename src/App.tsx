@@ -16,6 +16,8 @@ import { exportCSV, exportAllPDF } from '@/lib/export';
 import { AnalysePage } from '@/components/analyse/AnalysePage';
 import { ResultatsPage } from '@/components/resultats/ResultatsPage';
 import { WelcomeModal } from '@/components/WelcomeModal';
+import { decodeShareURL } from '@/lib/share';
+import type { SharedData } from '@/lib/share';
 
 export default function App() {
   const {
@@ -43,8 +45,12 @@ export default function App() {
     return false;
   });
 
-  const [showWelcome, setShowWelcome] = useState(true);
-  const [appView, setAppView] = useState<'evaluation' | 'resultats' | 'analyse'>('evaluation');
+  const [sharedData] = useState<SharedData | null>(() => decodeShareURL());
+  const isSharedView = !!sharedData;
+  const [showWelcome, setShowWelcome] = useState(!isSharedView);
+  const [appView, setAppView] = useState<'evaluation' | 'resultats' | 'analyse'>(
+    isSharedView ? 'resultats' : 'evaluation'
+  );
   const [evalSection, setEvalSection] = useState(0);
   const [showHistory, setShowHistory] = useState(false);
   const [viewingHistoryIndex, setViewingHistoryIndex] = useState<number | null>(null);
@@ -132,6 +138,26 @@ export default function App() {
       )}
 
       {/* Header */}
+      {isSharedView ? (
+        <header className="bg-white dark:bg-gray-800 shadow-sm sticky top-0 z-50">
+          <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
+            <h1 className="text-xl md:text-2xl font-bold text-gray-900 dark:text-white">
+              Évaluation Orale DNB 2026
+            </h1>
+            <button
+              onClick={toggleDarkMode}
+              className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+              title="Mode sombre"
+            >
+              {isDarkMode ? (
+                <Sun size={20} className="text-yellow-500" />
+              ) : (
+                <Moon size={20} className="text-gray-700" />
+              )}
+            </button>
+          </div>
+        </header>
+      ) : (
       <header className={cn("bg-white dark:bg-gray-800 shadow-sm sticky top-0 z-50", showWelcome && "invisible")}>
         <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
           <h1 className="text-xl md:text-2xl font-bold text-gray-900 dark:text-white">
@@ -297,12 +323,13 @@ export default function App() {
           </div>);
         })()}
       </header>
+      )}
 
       {/* Main content */}
       {showWelcome ? null : appView === 'analyse' ? (
         <AnalysePage />
       ) : appView === 'resultats' ? (
-        <ResultatsPage jury={state.jury} />
+        <ResultatsPage jury={state.jury} sharedData={sharedData} />
       ) : state.currentStep >= 5 ? (
         <div className="flex flex-col" style={{ height: 'calc(100vh - 64px)' }}>
           {/* Compact step indicator */}
