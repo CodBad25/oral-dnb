@@ -1,5 +1,6 @@
 import { ClipboardCheck, BarChart3, Trophy, ChevronRight } from 'lucide-react';
-import { getHistory, loadJuryDefaults } from '@/lib/storage';
+import { loadJuryDefaults } from '@/lib/storage';
+import { useHistory } from '@/contexts/HistoryContext';
 import { fmtPt, getEvaluationTotal, computeMean } from '@/lib/analyse-utils';
 import { grille } from '@/data/grille-2026';
 
@@ -10,7 +11,7 @@ interface WelcomeModalProps {
 }
 
 export const WelcomeModal = ({ onStartEvaluation, onViewResults, onViewAnalyse }: WelcomeModalProps) => {
-  const history = getHistory();
+  const { history } = useHistory();
   const jury = loadJuryDefaults();
   const hasHistory = history.length > 0;
 
@@ -118,7 +119,7 @@ export const WelcomeModal = ({ onStartEvaluation, onViewResults, onViewAnalyse }
         {/* Footer */}
         <div className="px-6 pb-5">
           <p className="text-[10px] text-center text-gray-400 dark:text-gray-500">
-            Les données sont sauvegardées localement sur cet appareil
+            Les données sont synchronisées avec le serveur
           </p>
         </div>
       </div>

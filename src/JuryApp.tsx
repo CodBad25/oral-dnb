@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
-import { Moon, Sun, Users, ArrowLeft, Save, Download, Pencil, Trophy, ClipboardCheck, LogOut } from 'lucide-react';
+import { Moon, Sun, Users, ArrowLeft, Save, Download, Pencil, Trophy, ClipboardCheck, LogOut, Loader2 } from 'lucide-react';
 import { useEvaluation } from '@/hooks/useEvaluation';
+import { useHistory } from '@/contexts/HistoryContext';
 import { grille } from '@/data/grille-2026';
-import { getHistory } from '@/lib/storage';
 import type { EvaluationState } from '@/hooks/useEvaluation';
 import type { Profile } from '@/lib/supabase';
 import { StepIndicator } from '@/components/StepIndicator';
@@ -23,6 +23,7 @@ interface JuryAppProps {
 }
 
 export default function JuryApp({ profile, onSignOut }: JuryAppProps) {
+  const { history, loading: historyLoading } = useHistory();
   const {
     state,
     setJury,
@@ -52,7 +53,7 @@ export default function JuryApp({ profile, onSignOut }: JuryAppProps) {
   const [appView, setAppView] = useState<'evaluation' | 'resultats'>('evaluation');
   const [evalSection, setEvalSection] = useState(0);
   const [showHistory, setShowHistory] = useState(false);
-  const [viewingHistoryIndex, setViewingHistoryIndex] = useState<number | null>(null);
+  const [viewingDbId, setViewingDbId] = useState<string | null>(null);
   const [isEditingHistory, setIsEditingHistory] = useState(false);
   const [savedState, setSavedState] = useState<EvaluationState | null>(null);
 
@@ -72,6 +73,18 @@ export default function JuryApp({ profile, onSignOut }: JuryAppProps) {
 
   const toggleDarkMode = () => setIsDarkMode(!isDarkMode);
 
+  // Show loading while history loads from Supabase
+  if (historyLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
+        <div className="flex flex-col items-center gap-3">
+          <Loader2 size={32} className="animate-spin text-indigo-600" />
+          <p className="text-sm text-gray-500 dark:text-gray-400">Chargement des données...</p>
+        </div>
+      </div>
+    );
+  }
+
   const candidateInfo =
     state.candidate.prenom && state.candidate.nom
       ? `${state.candidate.prenom} ${state.candidate.nom} - ${state.candidate.classe}`
@@ -82,20 +95,18 @@ export default function JuryApp({ profile, onSignOut }: JuryAppProps) {
   const total = getTotal();
 
   const isEvaluationStep = state.currentStep === 5;
-  const isViewingHistory = viewingHistoryIndex !== null;
+  const isViewingHistory = viewingDbId !== null;
 
   const currentSectionCriteria = isEvaluationStep ? grille.sections[evalSection].criteria : [];
   const allCriteriaScored = currentSectionCriteria.every((c) => state.scores[c.id] != null);
 
-  const history = getHistory();
-
-  const handleViewCandidate = (index: number) => {
+  const handleViewCandidate = (entry: EvaluationState & { _dbId?: string }) => {
     if (!isViewingHistory) {
       setSavedState({ ...state });
     }
-    setViewingHistoryIndex(index);
+    setViewingDbId(entry._dbId || null);
     setIsEditingHistory(false);
-    loadFromHistory(index);
+    loadFromHistory(entry);
     setShowHistory(false);
   };
 
@@ -103,15 +114,13 @@ export default function JuryApp({ profile, onSignOut }: JuryAppProps) {
     if (savedState) {
       restoreState(savedState);
     }
-    setViewingHistoryIndex(null);
+    setViewingDbId(null);
     setIsEditingHistory(false);
     setSavedState(null);
   };
 
   const handleSaveAndReturn = () => {
-    if (viewingHistoryIndex !== null) {
-      saveBackToHistory(viewingHistoryIndex);
-    }
+    saveBackToHistory();
     handleReturnToCurrent();
   };
 
@@ -265,12 +274,13 @@ export default function JuryApp({ profile, onSignOut }: JuryAppProps) {
                 </div>
               </div>
               <div className="flex flex-wrap gap-2">
-                {history.map((entry, i) => {
-                  const isViewing = viewingHistoryIndex === i;
+                {history.map((entry) => {
+                  const entryTotal = Object.values(entry.scores).reduce((a, b) => a + b, 0);
+                  const isViewing = viewingDbId === entry._dbId;
                   return (
                     <button
-                      key={i}
-                      onClick={() => handleViewCandidate(i)}
+                      key={entry._dbId || `${entry.candidate.nom}-${entry.candidate.prenom}`}
+                      onClick={() => handleViewCandidate(entry)}
                       className={cn(
                         "px-3 py-2 rounded-lg text-sm transition-colors text-left",
                         isViewing
@@ -282,7 +292,7 @@ export default function JuryApp({ profile, onSignOut }: JuryAppProps) {
                         {entry.candidate.prenom} {entry.candidate.nom}
                       </span>
                       <span className="text-gray-500 dark:text-gray-400 ml-2">
-                        {fmtPt(totals[i])}/{grille.totalPoints}
+                        {fmtPt(entryTotal)}/{grille.totalPoints}
                       </span>
                     </button>
                   );

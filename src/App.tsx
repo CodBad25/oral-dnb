@@ -1,6 +1,7 @@
 import { Loader2 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { LoginPage } from '@/components/auth/LoginPage';
+import { HistoryProvider } from '@/contexts/HistoryContext';
 import JuryApp from '@/JuryApp';
 
 export default function App() {
@@ -43,5 +44,9 @@ export default function App() {
   }
 
   // Jury
-  return <JuryApp profile={profile} onSignOut={() => signOut()} />;
+  return (
+    <HistoryProvider profile={profile}>
+      <JuryApp profile={profile} onSignOut={() => signOut()} />
+    </HistoryProvider>
+  );
 }

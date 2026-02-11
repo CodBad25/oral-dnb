@@ -1,16 +1,15 @@
 import { Download, FileText, FileSpreadsheet, FileJson } from 'lucide-react';
 import type { JuryInfo } from '@/types';
+import type { EvaluationState } from '@/hooks/useEvaluation';
 import { exportAllPDF, exportCSV } from '@/lib/export';
 import { exportJuryJSON } from '@/lib/analyse-export';
-import { getHistory } from '@/lib/storage';
 
 interface ExportSectionProps {
   jury: JuryInfo;
+  history: EvaluationState[];
 }
 
-export const ExportSection = ({ jury }: ExportSectionProps) => {
-  const history = getHistory();
-
+export const ExportSection = ({ jury, history }: ExportSectionProps) => {
   const buttons = [
     {
       label: 'Tous les PDF',

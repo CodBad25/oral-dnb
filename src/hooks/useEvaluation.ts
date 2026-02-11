@@ -1,7 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import type { JuryInfo, CandidateInfo } from '@/types';
-import { saveCurrentEvaluation, loadCurrentEvaluation, saveToHistory, updateHistoryEntry, saveJuryDefaults, loadJuryDefaults, getHistory } from '@/lib/storage';
-import { useRef } from 'react';
+import { saveCurrentEvaluation, loadCurrentEvaluation, saveJuryDefaults, loadJuryDefaults } from '@/lib/storage';
+import { useHistory } from '@/contexts/HistoryContext';
 
 export type TimerData = {
   expectedSeconds: number;
@@ -18,6 +18,7 @@ export type EvaluationState = {
     expose?: TimerData;
     entretien?: TimerData;
   };
+  _dbId?: string;
 };
 
 const TOTAL_STEPS = 6;
@@ -47,7 +48,6 @@ const initialState: EvaluationState = {
 const loadInitialState = (): EvaluationState => {
   const loaded = loadCurrentEvaluation();
   if (loaded) {
-    // Merge with initialState to handle new fields added after save
     return {
       ...initialState,
       ...loaded,
@@ -63,27 +63,32 @@ const loadInitialState = (): EvaluationState => {
 };
 
 export const useEvaluation = () => {
+  const { addToHistory, updateEntry } = useHistory();
   const [state, setState] = useState<EvaluationState>(loadInitialState);
-  // Track the history index of the current candidate (-1 = not yet saved)
-  const historyIndexRef = useRef<number>(-1);
+  const dbIdRef = useRef<string | null>(null);
+  const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
+  // Auto-save draft to localStorage
   useEffect(() => {
     saveCurrentEvaluation(state);
   }, [state]);
 
-  // Auto-save to history when reaching the summary step (step 6)
+  // Auto-save to Supabase when reaching step 6 (debounced 1s)
   useEffect(() => {
     if (state.currentStep === 6 && state.candidate.nom && Object.keys(state.scores).length > 0) {
-      if (historyIndexRef.current === -1) {
-        // First time reaching summary: add to history
-        saveToHistory(state);
-        historyIndexRef.current = getHistory().length - 1;
-      } else {
-        // Already saved: update the entry (e.g. comments changed)
-        updateHistoryEntry(historyIndexRef.current, state);
-      }
+      clearTimeout(saveTimeoutRef.current);
+      saveTimeoutRef.current = setTimeout(() => {
+        if (!dbIdRef.current) {
+          addToHistory(state).then((id) => {
+            if (id) dbIdRef.current = id;
+          });
+        } else {
+          updateEntry(dbIdRef.current, state);
+        }
+      }, 1000);
     }
-  }, [state]);
+    return () => clearTimeout(saveTimeoutRef.current);
+  }, [state, addToHistory, updateEntry]);
 
   const setJury = (jury: Partial<JuryInfo>) => {
     setState((prev) => {
@@ -160,13 +165,13 @@ export const useEvaluation = () => {
   };
 
   const resetForNextCandidate = () => {
-    // Ensure final state is saved (in case auto-save hasn't fired yet)
-    if (historyIndexRef.current >= 0) {
-      updateHistoryEntry(historyIndexRef.current, state);
+    clearTimeout(saveTimeoutRef.current);
+    if (dbIdRef.current) {
+      updateEntry(dbIdRef.current, state);
     } else if (state.candidate.nom && Object.keys(state.scores).length > 0) {
-      saveToHistory(state);
+      addToHistory(state);
     }
-    historyIndexRef.current = -1;
+    dbIdRef.current = null;
     setState((prev) => ({
       ...prev,
       currentStep: 2,
@@ -183,29 +188,27 @@ export const useEvaluation = () => {
     }));
   };
 
-  const loadFromHistory = (index: number) => {
-    const history = getHistory();
-    if (index >= 0 && index < history.length) {
-      const entry = history[index];
-      // Mark as already saved so auto-save updates instead of duplicating
-      historyIndexRef.current = index;
-      setState({
-        ...initialState,
-        ...entry,
-        jury: { ...initialState.jury, ...entry.jury },
-        candidate: { ...initialState.candidate, ...entry.candidate },
-        currentStep: 5,
-      });
-    }
+  const loadFromHistory = (entry: EvaluationState & { _dbId?: string }) => {
+    dbIdRef.current = entry._dbId || null;
+    setState({
+      ...initialState,
+      ...entry,
+      jury: { ...initialState.jury, ...entry.jury },
+      candidate: { ...initialState.candidate, ...entry.candidate },
+      currentStep: 5,
+    });
   };
 
   const restoreState = (saved: EvaluationState) => {
-    historyIndexRef.current = -1;
+    dbIdRef.current = null;
     setState(saved);
   };
 
-  const saveBackToHistory = (index: number) => {
-    updateHistoryEntry(index, state);
+  const saveBackToHistory = () => {
+    clearTimeout(saveTimeoutRef.current);
+    if (dbIdRef.current) {
+      updateEntry(dbIdRef.current, state);
+    }
   };
 
   return {

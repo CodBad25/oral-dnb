@@ -1,6 +1,6 @@
 import { Trophy } from 'lucide-react';
 import type { JuryInfo } from '@/types';
-import { getHistory } from '@/lib/storage';
+import { useHistory } from '@/contexts/HistoryContext';
 import { QuickStats } from './QuickStats';
 import { ExportSection } from './ExportSection';
 import { CriteriaMeanBars } from './CriteriaMeanBars';
@@ -12,7 +12,7 @@ interface ResultatsPageProps {
 }
 
 export const ResultatsPage = ({ jury }: ResultatsPageProps) => {
-  const history = getHistory();
+  const { history } = useHistory();
 
   if (history.length === 0) {
     return (
@@ -32,7 +32,7 @@ export const ResultatsPage = ({ jury }: ResultatsPageProps) => {
     <div style={{ height: 'calc(100vh - 64px)' }} className="overflow-y-auto">
       <div className="max-w-6xl mx-auto px-4 py-6 space-y-6">
         <QuickStats history={history} />
-        <ExportSection jury={jury} />
+        <ExportSection jury={jury} history={history} />
         <CriteriaMeanBars history={history} />
         <MasteryPies history={history} />
         <CandidateRanking history={history} />
