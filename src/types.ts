@@ -15,3 +15,18 @@ export type CandidateInfo = {
   horaire: string;
   sujet: string;
 };
+
+// ── Import / Export types ──
+
+export type JuryExportPayload = {
+  version: 1;
+  exportDate: string;
+  jury: JuryInfo;
+  candidates: import('@/hooks/useEvaluation').EvaluationState[];
+};
+
+export type ImportedJury = {
+  id: string;
+  importDate: string;
+  payload: JuryExportPayload;
+};

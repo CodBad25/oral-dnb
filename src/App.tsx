@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Moon, Sun, Users, ArrowLeft, Save, Download } from 'lucide-react';
+import { Moon, Sun, Users, ArrowLeft, Save, Download, BarChart3 } from 'lucide-react';
 import { useEvaluation } from '@/hooks/useEvaluation';
 import { grille } from '@/data/grille-2026';
 import { getHistory } from '@/lib/storage';
@@ -13,6 +13,7 @@ import { FloatingScoreBar } from '@/components/FloatingScoreBar';
 import { Summary } from '@/components/Summary';
 import { cn } from '@/lib/utils';
 import { exportCSV } from '@/lib/export';
+import { AnalysePage } from '@/components/analyse/AnalysePage';
 
 export default function App() {
   const {
@@ -40,6 +41,7 @@ export default function App() {
     return false;
   });
 
+  const [appView, setAppView] = useState<'evaluation' | 'analyse'>('evaluation');
   const [evalSection, setEvalSection] = useState(0);
   const [showHistory, setShowHistory] = useState(false);
   const [viewingHistoryIndex, setViewingHistoryIndex] = useState<number | null>(null);
@@ -105,7 +107,7 @@ export default function App() {
   };
 
   return (
-    <div className={`bg-gray-50 dark:bg-gray-900 transition-colors ${state.currentStep >= 5 ? 'h-screen overflow-hidden' : 'min-h-screen'}`}>
+    <div className={`bg-gray-50 dark:bg-gray-900 transition-colors ${appView === 'analyse' || state.currentStep >= 5 ? 'h-screen overflow-hidden' : 'min-h-screen'}`}>
       {/* Header */}
       <header className="bg-white dark:bg-gray-800 shadow-sm sticky top-0 z-50">
         <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
@@ -118,12 +120,34 @@ export default function App() {
                 {candidateInfo}
               </span>
             )}
-            {isViewingHistory && (
+            <button
+              onClick={() => {
+                setAppView(appView === 'evaluation' ? 'analyse' : 'evaluation');
+                setShowHistory(false);
+              }}
+              className={cn(
+                "flex items-center gap-1.5 rounded-lg transition-colors",
+                appView === 'analyse'
+                  ? "px-3 py-1.5 bg-indigo-600 text-white hover:bg-indigo-700 font-medium text-sm"
+                  : "p-2 hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300"
+              )}
+              title={appView === 'analyse' ? 'Retour aux évaluations' : 'Analyse'}
+            >
+              {appView === 'analyse' ? (
+                <>
+                  <ArrowLeft size={16} />
+                  <span>Évaluations</span>
+                </>
+              ) : (
+                <BarChart3 size={20} />
+              )}
+            </button>
+            {appView === 'evaluation' && isViewingHistory && (
               <span className="text-xs bg-amber-100 dark:bg-amber-900 text-amber-800 dark:text-amber-200 px-2 py-1 rounded font-medium">
                 Consultation
               </span>
             )}
-            {history.length > 0 && (
+            {appView === 'evaluation' && history.length > 0 && (
               <button
                 onClick={() => setShowHistory(!showHistory)}
                 className={cn(
@@ -155,7 +179,7 @@ export default function App() {
         </div>
 
         {/* History panel */}
-        {showHistory && (() => {
+        {appView === 'evaluation' && showHistory && (() => {
           const totals = history.map((e) => Object.values(e.scores).reduce((a, b) => a + b, 0));
           const avg = totals.length > 0 ? totals.reduce((a, b) => a + b, 0) / totals.length : 0;
           const min = totals.length > 0 ? Math.min(...totals) : 0;
@@ -232,8 +256,10 @@ export default function App() {
         })()}
       </header>
 
-      {/* Main content - evaluation step uses full height layout */}
-      {state.currentStep >= 5 ? (
+      {/* Main content */}
+      {appView === 'analyse' ? (
+        <AnalysePage />
+      ) : state.currentStep >= 5 ? (
         <div className="flex flex-col" style={{ height: 'calc(100vh - 64px)' }}>
           {/* Compact step indicator */}
           <div className="max-w-6xl mx-auto w-full px-4 pt-2">

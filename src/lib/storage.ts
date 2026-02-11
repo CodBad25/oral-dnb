@@ -70,6 +70,21 @@ export const saveJuryDefaults = (jury: Record<string, string>): void => {
   }
 };
 
+export const setHistory = (history: EvaluationState[]): void => {
+  try {
+    localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
+  } catch (error) {
+    console.error('Failed to set history:', error);
+  }
+};
+
+export const clearAllData = (): void => {
+  localStorage.removeItem(CURRENT_KEY);
+  localStorage.removeItem(HISTORY_KEY);
+  localStorage.removeItem(JURY_KEY);
+  localStorage.removeItem('oral-dnb-imported-juries');
+};
+
 export const loadJuryDefaults = (): Record<string, string> | null => {
   try {
     const data = localStorage.getItem(JURY_KEY);

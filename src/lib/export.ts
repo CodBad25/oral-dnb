@@ -9,12 +9,6 @@ const fmtPt = (v: number) => {
   return String(v).replace('.', ',');
 };
 
-const fmtDuration = (secs: number) => {
-  const m = Math.floor(secs / 60);
-  const s = secs % 60;
-  return `${m}:${String(s).padStart(2, '0')}`;
-};
-
 // ── PDF layout constants ─────────────────────────────────────
 
 const MARGIN = 10;
@@ -286,26 +280,6 @@ export const exportPDF = (state: EvaluationState) => {
   doc.text('Total points', MARGIN + 2, y + 5.5);
   doc.text(`${fmtPt(total)}   /${grille.totalPoints}`, COL_X[5] + COL_W[5] / 2, y + 5.5, { align: 'center' });
   y += hh;
-
-  // Timer info (if available)
-  if (state.timers?.expose || state.timers?.entretien) {
-    y += 4;
-    doc.setFontSize(8);
-    doc.setFont('helvetica', 'normal');
-    const parts: string[] = [];
-    if (state.timers.expose && state.timers.expose.actualSeconds > 0) {
-      const over = state.timers.expose.actualSeconds > state.timers.expose.expectedSeconds;
-      parts.push(`Expose : ${fmtDuration(state.timers.expose.actualSeconds)} / ${fmtDuration(state.timers.expose.expectedSeconds)}${over ? ' (depassement)' : ''}`);
-    }
-    if (state.timers.entretien && state.timers.entretien.actualSeconds > 0) {
-      const over = state.timers.entretien.actualSeconds > state.timers.entretien.expectedSeconds;
-      parts.push(`Entretien : ${fmtDuration(state.timers.entretien.actualSeconds)} / ${fmtDuration(state.timers.entretien.expectedSeconds)}${over ? ' (depassement)' : ''}`);
-    }
-    if (parts.length > 0) {
-      doc.text(parts.join('     '), MARGIN, y + 3);
-      y += 6;
-    }
-  }
 
   // Comments
   if (state.comments) {
